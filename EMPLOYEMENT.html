@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaushal Setu — Skilling Outcomes Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --ink: #1B2A4A;
+            --ink-soft: #33456b;
+            --ochre: #E0932B;
+            --ochre-deep: #c67a18;
+            --paper: #F7F4EE;
+            --paper-raised: #FFFFFF;
+            --charcoal: #2B2F38;
+            --charcoal-soft: #5b6270;
+            --forest: #3A7D5C;
+            --terracotta: #B5533C;
+            --line: #E3DED2;
+            --line-strong: #cfc8b8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        html,
+        body {
+            background: var(--paper);
+            color: var(--charcoal);
+            font-family: 'IBM Plex Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1,
+        h2,
+        h3,
+        .serif {
+            font-family: 'Fraunces', serif;
+        }
+
+        .mono {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        /* ---------- Shell layout ---------- */
+        .shell {
+            display: grid;
+            grid-template-columns: 248px 1fr;
+            min-height: 100vh;
+        }
+
+        @media (max-width:860px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+
+            .nav {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+                border-right: none;
+                border-bottom: 1px solid var(--line);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 14px 20px;
+            }
+
+            .nav .navlinks {
+                display: none;
+            }
+
+            .nav .navlinks.open {
+                display: flex;
+                position: absolute;
+                top: 56px;
+                left: 0;
+                right: 0;
+                background: var(--ink);
+                flex-direction: column;
+                padding: 8px 0;
+            }
+
+            .navtoggle {
+                display: block !important;
+            }
+        }
+
+        /* ---------- Left nav ---------- */
+        .nav {
+            background: var(--ink);
+            color: #EFE9DA;
+            padding: 28px 22px;
+            border-right: 1px solid #16223a;
+        }
+
+        .navtoggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #EFE9DA;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(155deg, var(--ochre), var(--ochre-deep));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            color: var(--ink);
+            font-size: 17px;
+        }
+
+        .brand-name {
+            font-family: 'Fraunces', serif;
+            font-size: 19px;
+            font-weight: 600;
+            letter-spacing: .2px;
+        }
+
+        .brand-sub {
+            font-size: 12px;
+            color: #B9C2D6;
+            margin: 0 0 30px 0;
+            line-height: 1.5;
+        }
+
+        .navlinks {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 34px;
+        }
+
+        .navlink {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 14.5px;
+            color: #CBD3E3;
+            cursor: pointer;
+            border: none;
+            background: none;
+            text-align: left;
+            width: 100%;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: background .15s ease, color .15s ease;
+        }
+
+        .navlink svg {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+            opacity: .85;
+        }
+
+        .navlink:hover {
+            background: #25335660;
+            color: #fff;
+        }
+
+        .navlink.active {
+            background: var(--ochre);
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .navlink.active svg {
+            opacity: 1;
+        }
+
+        .nav-footer {
+            border-top: 1px solid #2a3a5c;
+            padding-top: 16px;
+            font-size: 12px;
+            color: #8492ab;
+            line-height: 1.6;
+        }
+
+        /* ---------- Main ---------- */
+        main {
+            padding: 36px 44px 70px;
+            max-width: 1180px;
+        }
+
+        @media (max-width:860px) {
+            main {
+                padding: 24px 18px 60px;
+            }
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadein .35s ease;
+        }
+
+        @keyframes fadein {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .eyebrow-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .page-date {
+            font-size: 13px;
+            color: var(--charcoal-soft);
+        }
+
+        /* ---------- Hero stat block ---------- */
+        .hero {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 40px;
+            padding: 38px 0 34px;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 34px;
+        }
+
+        @media (max-width:760px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            line-height: 1.1;
+            font-weight: 600;
+            margin: 0 0 14px;
+            color: var(--ink);
+            letter-spacing: -.5px;
+        }
+
+        .hero p {
+            font-size: 15.5px;
+            line-height: 1.65;
+            color: var(--charcoal-soft);
+            max-width: 46ch;
+            margin: 0;
+        }
+
+        .hero-stat {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1px solid var(--line);
+            padding-left: 36px;
+        }
+
+        @media (max-width:760px) {
+            .hero-stat {
+                border-left: none;
+                padding-left: 0;
+                border-top: 1px solid var(--line);
+                padding-top: 24px;
+            }
+        }
+
+        .hero-stat .figure {
+            font-family: 'Fraunces', serif;
+            font-size: 64px;
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1;
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .hero-stat .figure span.unit {
+            font-size: 26px;
+            margin-top: 6px;
+            color: var(--ochre-deep);
+        }
+
+        .hero-stat .caption {
+            font-size: 13.5px;
+            color: var(--charcoal-soft);
+            margin-top: 8px;
+        }
+
+        .hero-stat .delta {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12.5px;
+            color: var(--forest);
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        /* ---------- Stat strip ---------- */
+        .stat-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--line);
+            border: 1px solid var(--line);
+            margin-bottom: 40px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        @media (max-width:760px) {
+            .stat-strip {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-cell {
+            background: var(--paper-raised);
+            padding: 20px 22px;
+        }
+
+        .stat-cell .num {
+            font-family: 'Fraunces', serif;
+            font-size: 27px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .stat-cell .lbl {
+            font-size: 12.5px;
+            color: var(--charcoal-soft);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* ---------- Section headers ---------- */
+        .section-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin: 0 0 18px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .section-head h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--ink);
+            margin: 0;
+        }
+
+        .section-head .hint {
+            font-size: 13px;
+            color: var(--charcoal-soft);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 24px;
+            margin-bottom: 44px;
+        }
+
+        @media (max-width:900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--paper-raised);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 24px 24px 18px;
+        }
+
+        .card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0 0 4px;
+            color: var(--ink);
+        }
+
+        .card .sub {
+            font-size: 12.5px;
+            color: var(--charcoal-soft);
+            margin: 0 0 16px;
+        }
+
+        /* ---------- District table ---------- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+
+        thead th {
+            text-align: left;
+            font-weight: 600;
+            color: var(--charcoal-soft);
+            font-size: 11.5px;
+            padding: 0 10px 10px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        tbody td {
+            padding: 11px 10px;
+            border-bottom: 1px solid #EFEBE1;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .bar-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 6px;
+            background: #EFEBE1;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--forest);
+        }
+
+        .bar-fill.warn {
+            background: var(--ochre);
+        }
+
+        .bar-fill.low {
+            background: var(--terracotta);
+        }
+
+        .pct {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12.5px;
+            width: 38px;
+            text-align: right;
+            color: var(--charcoal-soft);
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .tag.high {
+            background: #E4EFE8;
+            color: var(--forest);
+        }
+
+        .tag.mid {
+            background: #FBEDD9;
+            color: var(--ochre-deep);
+        }
+
+        .tag.low {
+            background: #F5E2DC;
+            color: var(--terracotta);
+        }
+
+        /* ---------- Skill gap list ---------- */
+        .gap-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px 16px;
+            align-items: center;
+            padding: 13px 0;
+            border-bottom: 1px solid #EFEBE1;
+        }
+
+        .gap-row:last-child {
+            border-bottom: none;
+        }
+
+        .gap-row .skill-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--ink);
+        }
+
+        .gap-row .skill-meta {
+            font-size: 12px;
+            color: var(--charcoal-soft);
+            margin-top: 2px;
+        }
+
+        .gap-score {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .gap-score.critical {
+            background: #F5E2DC;
+            color: var(--terracotta);
+        }
+
+        .gap-score.moderate {
+            background: #FBEDD9;
+            color: var(--ochre-deep);
+        }
+
+        .gap-score.minor {
+            background: #E4EFE8;
+            color: var(--forest);
+        }
+
+        /* ---------- Form ---------- */
+        .form-card {
+            max-width: 640px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 6px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ink);
+        }
+
+        input,
+        select {
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 14px;
+            padding: 10px 12px;
+            border: 1px solid var(--line-strong);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--charcoal);
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--ochre);
+            box-shadow: 0 0 0 3px #E0932B22;
+        }
+
+        .btn {
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 11px 22px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background: var(--ink);
+            color: #fff;
+            transition: background .15s ease;
+        }
+
+        .btn:hover {
+            background: var(--ink-soft);
+        }
+
+        .btn:focus-visible,
+        .navlink:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid var(--ochre);
+            outline-offset: 2px;
+        }
+
+        .confirm {
+            display: none;
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: #E4EFE8;
+            color: var(--forest);
+            font-size: 13.5px;
+            font-weight: 500;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .confirm.show {
+            display: flex;
+            animation: fadein .3s ease;
+        }
+
+        /* ---------- Recent registry ---------- */
+        .registry-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #EFEBE1;
+            font-size: 13.5px;
+        }
+
+        .registry-item:last-child {
+            border-bottom: none;
+        }
+
+        .registry-item .who {
+            font-weight: 500;
+            color: var(--ink);
+        }
+
+        .registry-item .meta {
+            color: var(--charcoal-soft);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        ::selection {
+            background: #E0932B55;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="shell">
+
+        <!-- LEFT NAV -->
+        <nav class="nav">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div class="brand">
+                    <div class="brand-mark">कौ</div>
+                    <div class="brand-name">Kaushal Setu</div>
+                </div>
+                <button class="navtoggle" id="navToggle" aria-label="Toggle menu">☰</button>
+            </div>
+            <p class="brand-sub">Skilling outcomes tracker · Skill Development, Employment &amp; Entrepreneurship Dept.,
+                Maharashtra</p>
+
+            <div class="navlinks" id="navLinks">
+                <button class="navlink active" data-page="overview">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="12" width="4" height="8" />
+                        <rect x="10" y="7" width="4" height="13" />
+                        <rect x="17" y="3" width="4" height="17" />
+                    </svg>
+                    Impact overview
+                </button>
+                <button class="navlink" data-page="register">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Register trainee
+                </button>
+                <button class="navlink" data-page="gaps">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M3 3v18h18" />
+                        <path d="M18 8l-5 5-3-3-4 4" />
+                    </svg>
+                    Skill gap analysis
+                </button>
+            </div>
+
+            <div class="nav-footer">
+                Prototype build for hackathon demo.<br>Data shown is illustrative, not live.
+            </div>
+        </nav>
+
+        <!-- MAIN -->
+        <main>
+
+            <!-- ============ PAGE 1: OVERVIEW ============ -->
+            <section class="page active" id="page-overview">
+                <div class="eyebrow-row">
+                    <span class="page-date">Maharashtra · All districts · FY 2025–26</span>
+                </div>
+
+                <div class="hero">
+                    <div>
+                        <h1>Where skilling turns into a livelihood, and where it doesn't.</h1>
+                        <p>Every trainee enrolled under a state skilling scheme is followed for 180 days after
+                            graduation. This dashboard closes the loop between training spend and actual employment —
+                            surfacing which districts, sectors and courses convert, and which need rework.</p>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="figure">67<span class="unit">%</span></div>
+                        <div class="caption">of FY25–26 trainees placed in a job or self-employment within 180 days of
+                            completing training</div>
+                        <div class="delta">↑ 6.2 pts vs previous cohort</div>
+                    </div>
+                </div>
+
+                <div class="stat-strip">
+                    <div class="stat-cell">
+                        <div class="num">1,84,320</div>
+                        <div class="lbl">Trainees enrolled, FY25–26</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="num">₹4,120</div>
+                        <div class="lbl">Avg. cost per successful placement</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="num">312</div>
+                        <div class="lbl">Empanelled training centres tracked</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="num">41%</div>
+                        <div class="lbl">Placements outside home district</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Placement rate by district</h3>
+                        <p class="sub">Trainees employed or self-employed within 180 days, top districts by enrolment
+                        </p>
+                        <canvas id="districtChart" height="230"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3>Outcome mix, all trainees</h3>
+                        <p class="sub">Status at the 180-day follow-up mark</p>
+                        <canvas id="outcomeDonut" height="230"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-head">
+                    <h2>District conversion detail</h2>
+                    <span class="hint">Sorted by placement rate</span>
+                </div>
+                <div class="card" style="padding-top:6px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>District</th>
+                                <th>Enrolled</th>
+                                <th>Placed</th>
+                                <th style="width:180px;">Conversion</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="districtTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ============ PAGE 2: REGISTER TRAINEE ============ -->
+            <section class="page" id="page-register">
+                <div class="eyebrow-row">
+                    <span class="page-date">Data collection</span>
+                </div>
+                <h1 class="serif" style="font-size:30px; font-weight:600; color:var(--ink); margin:0 0 8px;">Register a
+                    trainee outcome</h1>
+                <p style="color:var(--charcoal-soft); font-size:14.5px; max-width:56ch; margin:0 0 28px;">Used by
+                    training centre coordinators to log a trainee at enrolment, and to update their status at each
+                    follow-up window. This feeds directly into the district conversion numbers on the overview page.</p>
+
+                <div class="card form-card">
+                    <h3>Trainee &amp; course details</h3>
+                    <p class="sub">All fields required unless marked optional</p>
+                    <form id="traineeForm">
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="tName">Full name</label>
+                                <input type="text" id="tName" placeholder="e.g. Sunita Kamble" required>
+                            </div>
+                            <div class="field">
+                                <label for="tDistrict">District</label>
+                                <select id="tDistrict" required>
+                                    <option value="">Select district</option>
+                                    <option>Pune</option>
+                                    <option>Mumbai City</option>
+                                    <option>Nagpur</option>
+                                    <option>Nashik</option>
+                                    <option>Aurangabad</option>
+                                    <option>Kolhapur</option>
+                                    <option>Amravati</option>
+                                    <option>Solapur</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="tCourse">Course / trade</label>
+                                <select id="tCourse" required>
+                                    <option value="">Select course</option>
+                                    <option>Data Entry &amp; Office Automation</option>
+                                    <option>Electrical Technician</option>
+                                    <option>Solar Panel Installation</option>
+                                    <option>Beautician &amp; Wellness</option>
+                                    <option>Full-Stack Web Development</option>
+                                    <option>CNC Machine Operator</option>
+                                    <option>Healthcare Assistant</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="tCentre">Training centre (optional)</label>
+                                <input type="text" id="tCentre" placeholder="e.g. Govt. ITI Shivajinagar">
+                            </div>
+                            <div class="field">
+                                <label for="tStatus">Current status</label>
+                                <select id="tStatus" required>
+                                    <option value="">Select status</option>
+                                    <option>Enrolled — training in progress</option>
+                                    <option>Completed — seeking placement</option>
+                                    <option>Placed — salaried job</option>
+                                    <option>Placed — self-employed</option>
+                                    <option>Not placed after 180 days</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="tContact">Contact number</label>
+                                <input type="tel" id="tContact" placeholder="10-digit mobile" pattern="[0-9]{10}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">Save record</button>
+                        <div class="confirm" id="confirmMsg">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            <span id="confirmText">Record saved.</span>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section-head" style="margin-top:36px;">
+                    <h2>Recently registered</h2>
+                    <span class="hint" id="registryCount">3 records this session</span>
+                </div>
+                <div class="card">
+                    <div id="registryList"></div>
+                </div>
+            </section>
+
+            <!-- ============ PAGE 3: SKILL GAP ============ -->
+            <section class="page" id="page-gaps">
+                <div class="eyebrow-row">
+                    <span class="page-date">Curriculum vs. market demand · updated monthly</span>
+                </div>
+                <h1 class="serif" style="font-size:30px; font-weight:600; color:var(--ink); margin:0 0 8px;">Where
+                    training and demand are diverging</h1>
+                <p style="color:var(--charcoal-soft); font-size:14.5px; max-width:60ch; margin:0 0 28px;">Job postings
+                    across major portals are matched against active course curricula. A wide gap means industry is
+                    asking for a skill that few of our courses currently teach in depth.</p>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Demand vs. training capacity</h3>
+                        <p class="sub">Open job postings (last 90 days) vs. seats offered, by skill</p>
+                        <canvas id="gapChart" height="260"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3>Highest-priority gaps</h3>
+                        <p class="sub">Ranked by shortfall severity</p>
+                        <div id="gapList"></div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // ---------- Navigation ----------
+        const navlinks = document.querySelectorAll('.navlink');
+        const pages = document.querySelectorAll('.page');
+        navlinks.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navlinks.forEach(b => b.classList.remove('active'));
+                pages.forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('page-' + btn.dataset.page).classList.add('active');
+                document.getElementById('navLinks').classList.remove('open');
+            });
+        });
+        document.getElementById('navToggle').addEventListener('click', () => {
+            document.getElementById('navLinks').classList.toggle('open');
+        });
+
+        // ---------- Chart.js defaults ----------
+        const chartsAvailable = typeof Chart !== 'undefined';
+        if (chartsAvailable) {
+            Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+            Chart.defaults.color = '#5b6270';
+        } else {
+            console.warn('Chart.js failed to load (offline?) — charts will show a fallback message.');
+            document.querySelectorAll('canvas').forEach(c => {
+                const note = document.createElement('div');
+                note.style.cssText = 'padding:40px 10px;text-align:center;color:#8a8f99;font-size:13px;border:1px dashed #E3DED2;border-radius:8px;';
+                note.textContent = 'Chart unavailable offline — connect to the internet to load Chart.js from the CDN.';
+                c.replaceWith(note);
+            });
+        }
+
+        // ---------- District data ----------
+        const districts = [
+            { name: 'Pune', enrolled: 24100, placed: 18800 },
+            { name: 'Mumbai City', enrolled: 21650, placed: 15300 },
+            { name: 'Nagpur', enrolled: 17200, placed: 12900 },
+            { name: 'Nashik', enrolled: 15800, placed: 9700 },
+            { name: 'Aurangabad', enrolled: 13400, placed: 7500 },
+            { name: 'Kolhapur', enrolled: 11200, placed: 8100 },
+            { name: 'Amravati', enrolled: 9600, placed: 4300 },
+            { name: 'Solapur', enrolled: 8950, placed: 5000 },
+        ].map(d => ({ ...d, rate: Math.round((d.placed / d.enrolled) * 100) }))
+            .sort((a, b) => b.rate - a.rate);
+
+        if (chartsAvailable) {
+            new Chart(document.getElementById('districtChart'), {
+                type: 'bar',
+                data: {
+                    labels: districts.map(d => d.name),
+                    datasets: [{
+                        data: districts.map(d => d.rate),
+                        backgroundColor: districts.map(d => d.rate >= 65 ? '#3A7D5C' : d.rate >= 45 ? '#E0932B' : '#B5533C'),
+                        borderRadius: 5, maxBarThickness: 26
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y + '% placed' } } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#EFEBE1' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('outcomeDonut'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Placed — salaried', 'Placed — self-employed', 'Seeking placement', 'Not placed, 180d+'],
+                    datasets: [{
+                        data: [46, 21, 18, 15],
+                        backgroundColor: ['#3A7D5C', '#7FAE8E', '#E0932B', '#B5533C'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '62%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14, font: { size: 11.5 } } } }
+                }
+            });
+        }
+
+        // ---------- District table ----------
+        const tbody = document.getElementById('districtTable');
+        districts.forEach(d => {
+            const cls = d.rate >= 65 ? '' : d.rate >= 45 ? 'warn' : 'low';
+            const tag = d.rate >= 65 ? '<span class="tag high">On track</span>' : d.rate >= 45 ? '<span class="tag mid">Watch</span>' : '<span class="tag low">Needs support</span>';
+            tbody.innerHTML += `<tr>
+      <td>${d.name}</td>
+      <td class="mono">${d.enrolled.toLocaleString('en-IN')}</td>
+      <td class="mono">${d.placed.toLocaleString('en-IN')}</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill ${cls}" style="width:${d.rate}%"></div></div><span class="pct">${d.rate}%</span></div></td>
+      <td>${tag}</td>
+    </tr>`;
+        });
+
+        // ---------- Registration form ----------
+        const registry = [
+            { name: 'Rahul Pawar', course: 'Electrical Technician', district: 'Nagpur', status: 'Placed — salaried job' },
+            { name: 'Ayesha Sheikh', course: 'Full-Stack Web Development', district: 'Pune', status: 'Completed — seeking placement' },
+            { name: 'Ganesh More', course: 'Solar Panel Installation', district: 'Kolhapur', status: 'Placed — self-employed' },
+        ];
+        function renderRegistry() {
+            const list = document.getElementById('registryList');
+            list.innerHTML = registry.slice(0, 6).map(r => `
+      <div class="registry-item">
+        <div>
+          <div class="who">${r.name}</div>
+          <div class="meta">${r.course} · ${r.district}</div>
+        </div>
+        <span class="tag ${r.status.startsWith('Placed') ? 'high' : r.status.includes('seeking') ? 'mid' : 'low'}">${r.status}</span>
+      </div>`).join('');
+            document.getElementById('registryCount').textContent = registry.length + ' record' + (registry.length === 1 ? '' : 's') + ' this session';
+        }
+        renderRegistry();
+
+        document.getElementById('traineeForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const name = document.getElementById('tName').value.trim();
+            const district = document.getElementById('tDistrict').value;
+            const course = document.getElementById('tCourse').value;
+            const status = document.getElementById('tStatus').value;
+            if (!name || !district || !course || !status) return;
+
+            registry.unshift({ name, course, district, status });
+            renderRegistry();
+
+            const confirmBox = document.getElementById('confirmMsg');
+            document.getElementById('confirmText').textContent = `Saved — ${name} logged under ${district}.`;
+            confirmBox.classList.add('show');
+            setTimeout(() => confirmBox.classList.remove('show'), 3200);
+            e.target.reset();
+        });
+
+        // ---------- Skill gap data ----------
+        const gaps = [
+            { skill: 'Solar & Renewable Energy Installation', postings: 4200, seats: 1100, severity: 'critical' },
+            { skill: 'AI/ML & Data Analytics Fundamentals', postings: 3600, seats: 900, severity: 'critical' },
+            { skill: 'CNC & Precision Manufacturing', postings: 2800, seats: 1600, severity: 'moderate' },
+            { skill: 'Healthcare & Elder Care Assistance', postings: 3100, seats: 2000, severity: 'moderate' },
+            { skill: 'Warehouse & Logistics Operations', postings: 2400, seats: 2100, severity: 'minor' },
+            { skill: 'Basic Office Automation', postings: 1800, seats: 2600, severity: 'minor' },
+        ];
+
+        if (chartsAvailable) {
+            new Chart(document.getElementById('gapChart'), {
+                type: 'bar',
+                data: {
+                    labels: gaps.map(g => g.skill.length > 22 ? g.skill.slice(0, 20) + '…' : g.skill),
+                    datasets: [
+                        { label: 'Open postings (90d)', data: gaps.map(g => g.postings), backgroundColor: '#1B2A4A', borderRadius: 4, maxBarThickness: 16 },
+                        { label: 'Training seats offered', data: gaps.map(g => g.seats), backgroundColor: '#E0932B', borderRadius: 4, maxBarThickness: 16 },
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14, font: { size: 11.5 } } } },
+                    scales: {
+                        x: { grid: { color: '#EFEBE1' } },
+                        y: { grid: { display: false }, ticks: { font: { size: 11.5 } } }
+                    }
+                }
+            });
+        }
+
+        const gapList = document.getElementById('gapList');
+        gapList.innerHTML = gaps
+            .slice()
+            .sort((a, b) => (b.postings - b.seats) - (a.postings - a.seats))
+            .map(g => {
+                const shortfall = g.postings - g.seats;
+                return `<div class="gap-row">
+        <div>
+          <div class="skill-name">${g.skill}</div>
+          <div class="skill-meta">${g.postings.toLocaleString('en-IN')} postings vs ${g.seats.toLocaleString('en-IN')} seats</div>
+        </div>
+        <span class="gap-score ${g.severity}">${shortfall > 0 ? '+' : ''}${shortfall.toLocaleString('en-IN')} gap</span>
+      </div>`;
+            }).join('');
+    </script>
+
+</body>
+
+</html>
